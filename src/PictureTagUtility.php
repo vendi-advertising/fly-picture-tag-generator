@@ -169,7 +169,7 @@ class PictureTagUtility
                 $image_2x_height = (int)$image_2x['height'];
 
                 // Only add the 2x if both the height and width are greater
-                if ($original_image_height > $image_2x_height && $original_image_width > $image_2x_width) {
+                if ($image_2x_height > $original_image_height && $image_2x_width > $original_image_width) {
                     $new = [
                         'srcset' => $image_2x_src,
                         'media' => '(min-resolution: 150dpi)',

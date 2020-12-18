@@ -37,7 +37,7 @@ class PictureTagUtility
         return class_exists('WebPConvert\\WebPConvert');
     }
 
-    public function get_attachment_image_src($attachment_id = 0, $size = '', $crop = null): string
+    public function get_attachment_image_src($attachment_id = 0, $size = '', $crop = null): array
     {
         assert(function_exists('fly_get_attachment_image_src'));
         return fly_get_attachment_image_src($attachment_id, $size, $crop);

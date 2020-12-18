@@ -147,57 +147,57 @@ class PictureTagUtility
 
         $original_extension = mb_strtolower(pathinfo($original_image_src, PATHINFO_EXTENSION));
 
-        if ($this->supports_webp()) {
-            // TODO: This should have a better check to see if the image exists
-            // Assume that a WebP was created
-            $images[] = [
-                'srcset' => $original_image_src . '.webp',
-                'type' => 'image/webp',
-            ];
-        }
+        // The conversion library doesn't support GIFs
+        // See: https://github.com/rosell-dk/webp-convert/issues/73
+        if (in_array($original_image_width, ['jpeg', 'jpg', 'png'])) {
+            if ($this->supports_webp()) {
+                // TODO: This should have a better check to see if the image exists
+                // Assume that a WebP was created
+                $images[] = [
+                    'srcset' => $original_image_src . '.webp',
+                    'type' => 'image/webp',
+                ];
+            }
 
-        // See if a 2x was registered
-        $size_2x = $size . '-2x';
-        if ($this->does_image_size_exist($size_2x)) {
+            // See if a 2x was registered
+            $size_2x = $size . '-2x';
+            if ($this->does_image_size_exist($size_2x)) {
 
-            // Grab the 2x version
-            $image_2x = $this->get_attachment_image_src($attachment_id, $size_2x);
-            if ($image_2x && is_array($image_2x)) {
+                // Grab the 2x version
+                $image_2x = $this->get_attachment_image_src($attachment_id, $size_2x);
+                if ($image_2x && is_array($image_2x)) {
 
-                $image_2x_src = $image_2x['src'];
-                $image_2x_width = (int)$image_2x['width'];
-                $image_2x_height = (int)$image_2x['height'];
+                    $image_2x_src = $image_2x['src'];
+                    $image_2x_width = (int)$image_2x['width'];
+                    $image_2x_height = (int)$image_2x['height'];
 
-                // Only add the 2x if both the height and width are greater
-                if ($image_2x_height > $original_image_height && $image_2x_width > $original_image_width) {
-                    $new = [
-                        'srcset' => $image_2x_src,
-                        'media' => '(min-resolution: 150dpi)',
-                    ];
-
-                    // Append the MIME
-                    switch ($original_extension) {
-                        case 'jpg':
-                        case 'jpeg':
-                            $new['type'] = 'image/jpeg';
-                            break;
-
-                        case 'gif':
-                            $new['type'] = 'image/gif';
-                            break;
-
-                        case 'png':
-                            $new['type'] = 'image/png';
-                            break;
-                    }
-                    $images[] = $new;
-
-                    if ($this->supports_webp()) {
-                        // Also assume that a webp version exists, too.
-                        $images[] = [
-                            'srcset' => $image_2x_src . '.webp',
-                            'type' => 'image/webp',
+                    // Only add the 2x if both the height and width are greater
+                    if ($image_2x_height > $original_image_height && $image_2x_width > $original_image_width) {
+                        $new = [
+                            'srcset' => $image_2x_src,
+                            'media' => '(min-resolution: 150dpi)',
                         ];
+
+                        // Append the MIME
+                        switch ($original_extension) {
+                            case 'jpg':
+                            case 'jpeg':
+                                $new['type'] = 'image/jpeg';
+                                break;
+
+                            case 'png':
+                                $new['type'] = 'image/png';
+                                break;
+                        }
+                        $images[] = $new;
+
+                        if ($this->supports_webp()) {
+                            // Also assume that a webp version exists, too.
+                            $images[] = [
+                                'srcset' => $image_2x_src . '.webp',
+                                'type' => 'image/webp',
+                            ];
+                        }
                     }
                 }
             }

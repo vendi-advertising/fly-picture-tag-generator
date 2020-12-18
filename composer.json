@@ -1,0 +1,30 @@
+{
+  "name": "vendi-advertising/fly-picture-tag-generator",
+  "description": "",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Chris Haas",
+      "email": "chris@vendiadvertising.com"
+    }
+  ],
+  "require": {
+    "php": "^7.4"
+  },
+  "require-dev": {
+    "sensiolabs/security-checker": "*",
+    "symfony/var-dumper": "^4|^5"
+  },
+  "config": {
+    "optimize-autoloader": true
+  },
+  "autoload": {
+    "psr-4": {
+      "Vendi\\ImageUtilities\\FlyPictureTagGenerator\\": "src/"
+    },
+    "files": [
+      "src/Functions.php"
+    ]
+  }
+}

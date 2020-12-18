@@ -24,7 +24,7 @@
       "Vendi\\ImageUtilities\\FlyPictureTagGenerator\\": "src/"
     },
     "files": [
-      "src/Functions.php"
+      "includes/functions.php"
     ]
   }
 }

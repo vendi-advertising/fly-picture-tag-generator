@@ -120,6 +120,12 @@ class PictureTagUtility
         // We only want classes to be on the <picture> tag, so if any are passed, store those
         $classes = $attr['class'] ?? [];
 
+        if(!is_array($classes)){
+            $classes = [$classes];
+        }
+
+        unset($attr['class']);
+
         // Let Fly do the work of creating the <img /> tag. This is duplicated work but it is cached.
         $original_image_html = $this->get_attachment_image_html($attachment_id, $size, $crop, $attr);
         if (!$original_image_html) {

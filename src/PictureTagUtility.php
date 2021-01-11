@@ -186,7 +186,7 @@ class PictureTagUtility
                 if ($image_2x_height > $original_image_height && $image_2x_width > $original_image_width) {
                     $new = [
                         'srcset' => $image_2x_src,
-                        'media' => '(min-resolution: 150dpi)',
+                        'media' => '(min-resolution: 150dpi) and (prefers-reduced-data: no-preference)',
                     ];
 
                     // Append the MIME

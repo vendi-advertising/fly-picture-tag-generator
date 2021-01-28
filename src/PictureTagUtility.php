@@ -167,11 +167,9 @@ class PictureTagUtility
         // See if a 2x was registered
         $size_2x = $size . '-2x';
         if ($this->does_image_size_exist($size_2x)) {
-
             // Grab the 2x version
             $image_2x = $this->get_attachment_image_src($attachment_id, $size_2x);
             if ($image_2x && is_array($image_2x)) {
-
                 $image_2x_src = $image_2x['src'];
                 $image_2x_width = (int)$image_2x['width'];
                 $image_2x_height = (int)$image_2x['height'];
@@ -201,10 +199,18 @@ class PictureTagUtility
                         $images[] = [
                             'srcset' => $image_2x_src . '.webp',
                             'type' => 'image/webp',
+                            'media' => '(min-resolution: 150dpi)',
                         ];
                     }
                 }
             }
+        }
+
+        assert(function_exists('apply_filters'));
+        $images = apply_filters('vendi/picture-tag/images', $images, $attachment_id, $size, $crop, $attr);
+
+        if (!is_array($images) || !count($images)) {
+            return '';
         }
 
         // Convert to HTML
@@ -212,6 +218,5 @@ class PictureTagUtility
 
         // Guarantee HTML safety
         return $this->sanitize_picture_tag($picture);
-
     }
 }

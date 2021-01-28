@@ -162,8 +162,8 @@ class PictureTagUtility
         $does_image_support_webp = $this->does_file_extension_support_webp($original_extension);
 
         if ($does_image_support_webp && $this->does_system_support_webp()) {
-            // TODO: This should have a better check to see if the image exists
-            // Assume that a WebP was created
+            // Assume that a WebP was created, however we added a hook at the end that
+            // allows users to validate on their own.
             $images[] = [
                 'srcset' => $original_image_src . '.webp',
                 'type' => 'image/webp',
@@ -205,7 +205,7 @@ class PictureTagUtility
                         $images[] = [
                             'srcset' => $image_2x_src . '.webp',
                             'type' => 'image/webp',
-                            'media' => '(min-resolution: 150dpi)',
+                            'media' => '(min-resolution: 150dpi) and (prefers-reduced-data: no-preference)',
                         ];
                     }
                 }

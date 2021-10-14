@@ -8,6 +8,9 @@ class PictureTagUtility
 
     private $all_image_sizes = null;
 
+    public const WEBP_WEIGHT = 1000;
+    private const JPEG_WEIGHT = 1;
+
     public static function get_instance(): self
     {
         if (!self::$instance instanceof self) {
@@ -47,12 +50,14 @@ class PictureTagUtility
     public function get_attachment_image_src($attachment_id = 0, $size = '', $crop = null): array
     {
         assert(function_exists('fly_get_attachment_image_src'));
+
         return fly_get_attachment_image_src($attachment_id, $size, $crop);
     }
 
     public function get_attachment_image_html($attachment_id = 0, $size = '', $crop = null, $attr = []): string
     {
         assert(function_exists('fly_get_attachment_image'));
+
         return fly_get_attachment_image($attachment_id, $size, $crop, $attr);;
     }
 
@@ -70,7 +75,7 @@ class PictureTagUtility
             if (is_array($image)) {
                 $html = '<source ';
                 foreach ($image as $name => $value) {
-                    $html .= " $name=" . '"' . esc_attr($value) . '"';
+                    $html .= " $name=".'"'.esc_attr($value).'"';
                 }
                 $html .= ' />';
                 $ret[] = $html;
@@ -120,7 +125,7 @@ class PictureTagUtility
         // We only want classes to be on the <picture> tag, so if any are passed, store those
         $classes = $attr['class'] ?? [];
 
-        if(!is_array($classes)){
+        if (!is_array($classes)) {
             $classes = [$classes];
         }
 
@@ -161,17 +166,19 @@ class PictureTagUtility
         $original_extension = mb_strtolower(pathinfo($original_image_src, PATHINFO_EXTENSION));
         $does_image_support_webp = $this->does_file_extension_support_webp($original_extension);
 
+        $new_images = [];
+
         if ($does_image_support_webp && $this->does_system_support_webp()) {
             // Assume that a WebP was created, however we added a hook at the end that
             // allows users to validate on their own.
-            $images[] = [
-                'srcset' => $original_image_src . '.webp',
+            $new_images[self::WEBP_WEIGHT * 72] = [
+                'srcset' => $original_image_src.'.webp',
                 'type' => 'image/webp',
             ];
         }
 
         // See if a 2x was registered
-        $size_2x = $size . '-2x';
+        $size_2x = $size.'-2x';
         if ($this->does_image_size_exist($size_2x)) {
             // Grab the 2x version
             $image_2x = $this->get_attachment_image_src($attachment_id, $size_2x);
@@ -184,7 +191,7 @@ class PictureTagUtility
                 if ($image_2x_height > $original_image_height && $image_2x_width > $original_image_width) {
                     $new = [
                         'srcset' => $image_2x_src,
-                        'media' => '(min-resolution: 150dpi) and (prefers-reduced-data: no-preference)',
+                        'media' => '(min-resolution: 150dpi)',
                     ];
 
                     // Append the MIME
@@ -198,19 +205,22 @@ class PictureTagUtility
                             $new['type'] = 'image/png';
                             break;
                     }
-                    $images[] = $new;
+                    $new_images[self::JPEG_WEIGHT * 72 * 2] = $new;
 
                     if ($does_image_support_webp && $this->does_system_support_webp()) {
                         // Also assume that a webp version exists, too.
-                        $images[] = [
-                            'srcset' => $image_2x_src . '.webp',
+                        $new_images[self::WEBP_WEIGHT * 72 * 2] = [
+                            'srcset' => $image_2x_src.'.webp',
                             'type' => 'image/webp',
-                            'media' => '(min-resolution: 150dpi) and (prefers-reduced-data: no-preference)',
+                            'media' => '(min-resolution: 150dpi)',
                         ];
                     }
                 }
             }
         }
+
+        krsort($new_images);
+        $images = array_merge($images, $new_images);
 
         assert(function_exists('apply_filters'));
         $images = apply_filters('vendi/picture-tag/images', $images, $attachment_id, $size, $crop, $attr);

@@ -8,8 +8,15 @@ class PictureTagUtility
 
     private $all_image_sizes = null;
 
-    public const WEBP_WEIGHT = 1000;
-    private const JPEG_WEIGHT = 1;
+    private const WEIGHT_FILE_FORMAT = 1;
+    private const WEIGHT_DPI = 10;
+    private const FILE_FORMAT_WEBP = 2;
+    private const FILE_FORMAT_JPEG = 1;
+
+    private const WEIGHT_FINAL_WEBP_2x = self::WEIGHT_DPI * 2 + self::WEIGHT_FILE_FORMAT * self::FILE_FORMAT_WEBP;
+    private const WEIGHT_FINAL_WEBP_1x = self::WEIGHT_DPI * 1 + self::WEIGHT_FILE_FORMAT * self::FILE_FORMAT_WEBP;
+    private const WEIGHT_FINAL_JPEG_2x = self::WEIGHT_DPI * 2 + self::WEIGHT_FILE_FORMAT * self::FILE_FORMAT_JPEG;
+    private const WEIGHT_FINAL_JPEG_1x = self::WEIGHT_DPI * 1 + self::WEIGHT_FILE_FORMAT * self::FILE_FORMAT_JPEG;
 
     public static function get_instance(): self
     {
@@ -171,7 +178,7 @@ class PictureTagUtility
         if ($does_image_support_webp && $this->does_system_support_webp()) {
             // Assume that a WebP was created, however we added a hook at the end that
             // allows users to validate on their own.
-            $new_images[self::WEBP_WEIGHT * 72] = [
+            $new_images[self::WEIGHT_FINAL_WEBP_1x] = [
                 'srcset' => $original_image_src.'.webp',
                 'type' => 'image/webp',
             ];
@@ -205,11 +212,11 @@ class PictureTagUtility
                             $new['type'] = 'image/png';
                             break;
                     }
-                    $new_images[self::JPEG_WEIGHT * 72 * 2] = $new;
+                    $new_images[self::WEIGHT_FINAL_JPEG_2x] = $new;
 
                     if ($does_image_support_webp && $this->does_system_support_webp()) {
                         // Also assume that a webp version exists, too.
-                        $new_images[self::WEBP_WEIGHT * 72 * 2] = [
+                        $new_images[self::WEIGHT_FINAL_WEBP_2x] = [
                             'srcset' => $image_2x_src.'.webp',
                             'type' => 'image/webp',
                             'media' => '(min-resolution: 150dpi)',

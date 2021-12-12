@@ -112,6 +112,7 @@ class PictureTagUtility
                     'width' => [],
                     'height' => [],
                     'src' => [],
+                    'loading' => [],
                 ],
                 'source' => [
                     'srcset' => [],

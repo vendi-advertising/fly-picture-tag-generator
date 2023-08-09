@@ -145,8 +145,7 @@ class PictureTagUtility
             return '';
         }
 
-        // We don't support manual width/height here
-        if (!$size || !is_string($size)) {
+        if (!$size) {
             return $original_image_html;
         }
 
@@ -185,43 +184,46 @@ class PictureTagUtility
             ];
         }
 
-        // See if a 2x was registered
-        $size_2x = $size.'-2x';
-        if ($this->does_image_size_exist($size_2x)) {
-            // Grab the 2x version
-            $image_2x = $this->get_attachment_image_src($attachment_id, $size_2x);
-            if ($image_2x && is_array($image_2x)) {
-                $image_2x_src = $image_2x['src'];
-                $image_2x_width = (int)$image_2x['width'];
-                $image_2x_height = (int)$image_2x['height'];
-
-                // Only add the 2x if both the height and width are greater
-                if ($image_2x_height > $original_image_height && $image_2x_width > $original_image_width) {
-                    $new = [
-                        'srcset' => $image_2x_src,
-                        'media' => '(min-resolution: 150dpi)',
-                    ];
-
-                    // Append the MIME
-                    switch ($original_extension) {
-                        case 'jpg':
-                        case 'jpeg':
-                            $new['type'] = 'image/jpeg';
-                            break;
-
-                        case 'png':
-                            $new['type'] = 'image/png';
-                            break;
-                    }
-                    $new_images[self::WEIGHT_FINAL_JPEG_2x] = $new;
-
-                    if ($does_image_support_webp && $this->does_system_support_webp()) {
-                        // Also assume that a webp version exists, too.
-                        $new_images[self::WEIGHT_FINAL_WEBP_2x] = [
-                            'srcset' => $image_2x_src.'.webp',
-                            'type' => 'image/webp',
+        // The 2x version is only supported in string mode currently
+        if(is_string($size)){
+            // See if a 2x was registered
+            $size_2x = $size.'-2x';
+            if ($this->does_image_size_exist($size_2x)) {
+                // Grab the 2x version
+                $image_2x = $this->get_attachment_image_src($attachment_id, $size_2x);
+                if ($image_2x && is_array($image_2x)) {
+                    $image_2x_src = $image_2x['src'];
+                    $image_2x_width = (int)$image_2x['width'];
+                    $image_2x_height = (int)$image_2x['height'];
+    
+                    // Only add the 2x if both the height and width are greater
+                    if ($image_2x_height > $original_image_height && $image_2x_width > $original_image_width) {
+                        $new = [
+                            'srcset' => $image_2x_src,
                             'media' => '(min-resolution: 150dpi)',
                         ];
+    
+                        // Append the MIME
+                        switch ($original_extension) {
+                            case 'jpg':
+                            case 'jpeg':
+                                $new['type'] = 'image/jpeg';
+                                break;
+    
+                            case 'png':
+                                $new['type'] = 'image/png';
+                                break;
+                        }
+                        $new_images[self::WEIGHT_FINAL_JPEG_2x] = $new;
+    
+                        if ($does_image_support_webp && $this->does_system_support_webp()) {
+                            // Also assume that a webp version exists, too.
+                            $new_images[self::WEIGHT_FINAL_WEBP_2x] = [
+                                'srcset' => $image_2x_src.'.webp',
+                                'type' => 'image/webp',
+                                'media' => '(min-resolution: 150dpi)',
+                            ];
+                        }
                     }
                 }
             }

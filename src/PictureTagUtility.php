@@ -2,6 +2,8 @@
 
 namespace Vendi\ImageUtilities\FlyPictureTagGenerator;
 
+use Symfony\Component\Filesystem\Path;
+
 class PictureTagUtility
 {
     private static $instance = null;
@@ -126,6 +128,27 @@ class PictureTagUtility
 
     public function get_attachment_picture($attachment_id = 0, $size = '', $crop = null, $attr = []): string
     {
+
+        $image_meta = wp_get_attachment_metadata($attachment_id);
+
+        //Detect GIF animation
+        if (str_ends_with($image_meta['file'], '.gif')){
+            return wp_get_attachment_image($attachment_id, $size, $crop, $attr);
+        }
+
+        //Detect WebP Animation
+        if (str_ends_with($image_meta['file'], '.webp')) {
+            $webpContents = file_get_contents(Path::join(WP_CONTENT_DIR,'/uploads/',  $image_meta['file']));
+            $where = strpos($webpContents, "ANMF");
+
+            if ($where !== FALSE){
+                return wp_get_attachment_image($attachment_id, $size, $crop, $attr);
+
+            }
+
+        }
+
+
         // This will hold all possible image versions. If the value is a string it is used literally, otherwise
         // it should be an array of possible attributes for the <source /> tag.
         $images = [];
@@ -151,6 +174,10 @@ class PictureTagUtility
 
         // See if the image exists in the first place, and if not, fail early
         $original_image = $this->get_attachment_image_src($attachment_id, $size);
+
+
+
+
         if (!$original_image || !is_array($original_image)) {
             return '';
         }
@@ -161,7 +188,6 @@ class PictureTagUtility
             $original_image_html = str_replace($matches['entire'], '', $original_image_html);
             $classes = array_merge($classes, explode(' ', $matches['class']));
         }
-
         // Store our original <img /> tag directly
         $images[] = $original_image_html;
 
@@ -195,27 +221,27 @@ class PictureTagUtility
                     $image_2x_src = $image_2x['src'];
                     $image_2x_width = (int)$image_2x['width'];
                     $image_2x_height = (int)$image_2x['height'];
-    
+
                     // Only add the 2x if both the height and width are greater
                     if ($image_2x_height > $original_image_height && $image_2x_width > $original_image_width) {
                         $new = [
                             'srcset' => $image_2x_src,
                             'media' => '(min-resolution: 150dpi)',
                         ];
-    
+
                         // Append the MIME
                         switch ($original_extension) {
                             case 'jpg':
                             case 'jpeg':
                                 $new['type'] = 'image/jpeg';
                                 break;
-    
+
                             case 'png':
                                 $new['type'] = 'image/png';
                                 break;
                         }
                         $new_images[self::WEIGHT_FINAL_JPEG_2x] = $new;
-    
+
                         if ($does_image_support_webp && $this->does_system_support_webp()) {
                             // Also assume that a webp version exists, too.
                             $new_images[self::WEIGHT_FINAL_WEBP_2x] = [

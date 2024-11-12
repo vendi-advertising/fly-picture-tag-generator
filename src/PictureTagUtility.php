@@ -129,23 +129,22 @@ class PictureTagUtility
     public function get_attachment_picture($attachment_id = 0, $size = '', $crop = null, $attr = []): string
     {
 
-        $image_meta = wp_get_attachment_metadata($attachment_id);
-
-        //Detect GIF animation
-        if (str_ends_with($image_meta['file'], '.gif')){
-            return wp_get_attachment_image($attachment_id, $size, $crop, $attr);
-        }
-
-        //Detect WebP Animation
-        if (str_ends_with($image_meta['file'], '.webp')) {
-            $webpContents = file_get_contents(Path::join(WP_CONTENT_DIR,'/uploads/',  $image_meta['file']));
-            $where = strpos($webpContents, "ANMF");
-
-            if ($where !== FALSE){
+        if (($image_meta = wp_get_attachment_metadata($attachment_id)) && isset($image_meta['file']) && is_string($image_meta['file'])) {
+            
+            //Detect GIF animation
+            if (str_ends_with($image_meta['file'], '.gif')) {
                 return wp_get_attachment_image($attachment_id, $size, $crop, $attr);
-
             }
 
+            //Detect WebP Animation
+            if (str_ends_with($image_meta['file'], '.webp')) {
+                $webpContents = file_get_contents(Path::join(WP_CONTENT_DIR,'/uploads/',  $image_meta['file']));
+                $where = strpos($webpContents, "ANMF");
+    
+                if ($where !== FALSE){
+                    return wp_get_attachment_image($attachment_id, $size, $crop, $attr);
+                }
+            }
         }
 
 
